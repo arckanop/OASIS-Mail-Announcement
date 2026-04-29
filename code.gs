@@ -1,7 +1,7 @@
 function myFunction() {
 	Logger.log(MailApp.getRemainingDailyQuota());
 
-	for (let i = 2; i <= 4; i++) {
+	for (let i = 2; i <= 2; i++) {
 		sendEmailByRow(i);
 	}
 }
@@ -134,16 +134,26 @@ Head of Human Resources
 
 function generateHtmlBody(data) {
 	const memberRows = (data.members || []).map((member, index) => {
-		const isLast = index === data.members.length - 1;
+		const border = index === data.members.length - 1 ? "" : "border-bottom:1px solid #f3f4f6;";
 
 		return `
-			<li style="display:flex; align-items:center; gap:0.75rem; padding-left:1rem; padding-right:1rem; padding-top:0.75rem; padding-bottom:0.75rem; font-size:0.875rem; line-height:1.25rem; color:#374151; background-color:#ffffff; box-sizing:border-box; ${isLast ? "" : "border-bottom-style:solid; border-bottom-width:1px; border-bottom-color:#f3f4f6;"}">
-				<span style="display:flex; width:1.5rem; height:1.5rem; flex-shrink:0; align-items:center; justify-content:center; border-radius:9999px; background-color:#ffe4e6; font-size:11px; font-weight:600; color:#e11d48; box-sizing:border-box;">
-					${index + 1}
-				</span>
-				<span>${escapeHtml_(member.fullName)}</span>
-			</li>
-		`;
+		<tr>
+			<td style="padding:12px 16px;${border}">
+				<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+					<tr>
+						<td width="28" valign="middle" style="width:28px;">
+							<div style="width:24px;height:24px;border-radius:50%;background-color:#ffe4e6;color:#e11d48;font-size:11px;font-weight:500;line-height:24px;text-align:center;">
+								${index + 1}
+							</div>
+						</td>
+						<td valign="middle" style="padding-left:12px;font-size:14px;line-height:20px;color:#374151;font-weight:400;">
+							${escapeHtml_(member.fullName)}
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	`;
 	}).join("");
 
 	return `
@@ -159,20 +169,24 @@ function generateHtmlBody(data) {
 		rel="stylesheet" />
 </head>
 
-<body style="margin:0; box-sizing:border-box; width:100%; -webkit-text-size-adjust:100%; font-family:'IBM Plex Sans Thai','Noto Sans Thai', 'Anuphan', 'Kanit', Arial, sans-serif; background-image:linear-gradient(to bottom, #fff1f2, #ffffff, #f3f4f6); min-height:100vh; padding-left:1.5rem; padding-right:1.5rem; padding-top:2.5rem; padding-bottom:2.5rem; color:#1f2937;"
->
-	<div style="margin-left:auto; margin-right:auto; max-width:48rem; overflow:hidden; border-radius:1.5rem; border-style:solid; border-width:1px; border-color:#e5e7eb; background-color:#ffffff; box-shadow:0 20px 25px -5px rgba(0,0,0,0.10), 0 8px 10px -6px rgba(0,0,0,0.10); width:100%; box-sizing:border-box; font-family:'IBM Plex Sans Thai','Noto Sans Thai', 'Anuphan', 'Kanit', Arial, sans-serif;">
+<body
+	style="margin:0; box-sizing:border-box; width:100%; -webkit-text-size-adjust:100%; font-family:'IBM Plex Sans Thai','Noto Sans Thai', 'Anuphan', 'Kanit', 'Noto Sans Thai','Tahoma', Arial, sans-serif; background-image:linear-gradient(to bottom, #fff1f2, #ffffff, #f3f4f6); min-height:100vh; padding-left:1.5rem; padding-right:1.5rem; padding-top:2.5rem; padding-bottom:2.5rem; color:#1f2937;">
+	<div
+		style="margin-left:auto; margin-right:auto; max-width:48rem; overflow:hidden; border-radius:1.5rem; border-style:solid; border-width:1px; border-color:#e5e7eb; background-color:#ffffff; box-shadow:0 20px 25px -5px rgba(0,0,0,0.10), 0 8px 10px -6px rgba(0,0,0,0.10); width:100%; box-sizing:border-box; font-family:'IBM Plex Sans Thai','Noto Sans Thai', 'Anuphan', 'Kanit', 'Noto Sans Thai','Tahoma', Arial, sans-serif;">
 
 		<div
-		 style="background-image:linear-gradient(to top right, #fb7185, #ef4444, #dc2626); padding-left:3rem; padding-right:3rem; padding-top:2.5rem; padding-bottom:2.5rem; color:#ffffff; text-align:center; position:relative;">
+			style="background-image:linear-gradient(to top right, #fb7185, #ef4444, #dc2626); padding-left:3rem; padding-right:3rem; padding-top:2.5rem; padding-bottom:2.5rem; color:#ffffff; text-align:center; position:relative;">
 			<div
-			 style="margin-bottom:1rem; display:inline-flex; align-items:center; gap:0.5rem; border-radius:9999px; background-color:rgba(255,255,255,0.15); border-style:solid; border-width:1px; border-color:rgba(255,255,255,0.30); padding-left:1rem; padding-right:1rem; padding-top:0.25rem; padding-bottom:0.25rem; font-size:0.75rem; line-height:1rem;">
+				style="margin-bottom:1rem; display:inline-flex; align-items:center; gap:0.5rem; border-radius:9999px; background-color:rgba(255,255,255,0.15); border-style:solid; border-width:1px; border-color:rgba(255,255,255,0.30); padding-left:1rem; padding-right:1rem; padding-top:0.25rem; padding-bottom:0.25rem; font-size:0.75rem; line-height:1rem;">
 				ประกาศผลการคัดเลือก
 			</div>
-			<h1 style="margin:0; font-size:2.25rem; line-height:2.5rem; font-weight:700; letter-spacing:-0.025em;">ยินดีด้วยกับทีม</h1>
-			<h2 style="margin:0; margin-top:0.5rem; font-size:1.875rem; line-height:2.25rem; font-weight:600; opacity:0.9;">${escapeHtml_(data.teamName)}</h2>
+			<h1 style="margin:0; font-size:2.25rem; line-height:2.5rem; font-weight:700; letter-spacing:-0.025em;">
+				ยินดีด้วยกับทีม</h1>
+			<h2
+				style="margin:0; margin-top:0.5rem; font-size:1.875rem; line-height:2.25rem; font-weight:600; opacity:0.9;">
+				${escapeHtml_(data.teamName)}</h2>
 			<div
-			 style="margin-top:1.25rem; display:inline-flex; align-items:center; gap:0.5rem; border-radius:9999px; background-color:rgba(255,255,255,0.15); border-style:solid; border-width:1px; border-color:rgba(255,255,255,0.30); padding-left:1rem; padding-right:1rem; padding-top:0.5rem; padding-bottom:0.5rem; font-size:0.875rem; line-height:1.25rem;">
+				style="margin-top:1.25rem; display:inline-flex; align-items:center; gap:0.5rem; border-radius:9999px; background-color:rgba(255,255,255,0.15); border-style:solid; border-width:1px; border-color:rgba(255,255,255,0.30); padding-left:1rem; padding-right:1rem; padding-top:0.5rem; padding-bottom:0.5rem; font-size:0.875rem; line-height:1.25rem;">
 				ผ่านการคัดเลือกเข้าโครงการ Organ Ambassador Student Innovation Scheme: OASIS
 			</div>
 		</div>
@@ -180,15 +194,28 @@ function generateHtmlBody(data) {
 		<div style="padding-left:3rem; padding-right:3rem; padding-top:2rem; padding-bottom:2rem;">
 
 			<section>
-				<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
-					<h3 style="margin:0; font-size:0.75rem; line-height:1rem; font-weight:600; letter-spacing:0.1em; color:#9ca3af; text-transform:uppercase;">สมาชิกในทีม</h3>
-					<span
-					 style="border-radius:9999px; background-color:#fff1f2; border-style:solid; border-width:1px; border-color:#ffe4e6; padding-left:0.75rem; padding-right:0.75rem; padding-top:0.25rem; padding-bottom:0.25rem; font-size:0.75rem; line-height:1rem; font-weight:500; color:#f43f5e;">${data.members.length}
-						คน</span>
-				</div>
-				<ul style="margin:0; padding:0; list-style:none; border-radius:1rem; border-style:solid; border-width:1px; border-color:#f3f4f6; overflow:hidden;">
+				<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+					style="margin-bottom:16px;">
+					<tr>
+						<td align="left" valign="middle">
+							<h3
+								style="margin:0;font-size:12px;line-height:16px;font-weight:600;letter-spacing:1.2px;color:#9ca3af;text-transform:uppercase;">
+								สมาชิกในทีม
+							</h3>
+						</td>
+
+						<td align="right" valign="middle">
+							<span
+								style="display:inline-block;border-radius:9999px;background-color:#fff1f2;border:1px solid #ffe4e6;padding:4px 12px;font-size:12px;line-height:16px;font-weight:500;color:#f43f5e;white-space:nowrap;">
+								${data.members.length} คน
+							</span>
+						</td>
+					</tr>
+				</table>
+				<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+					style="border:1px solid #f3f4f6;border-radius:16px;border-collapse:separate;overflow:hidden;">
 					${memberRows}
-				</ul>
+				</table>
 			</section>
 
 			<section style="margin-top:2rem;">
@@ -196,119 +223,175 @@ function generateHtmlBody(data) {
 					ทาง Organtogo Gen 2 ในเครือข่ายเยาวชนอาสาสมัครกาชาดไทย (Thai Red Cross Youth Network: TRCYN)
 					ภายใต้สำนักยุวกาชาดและอาสาสมัคร สภากาชาดไทย ขอแสดงความยินดีเป็นอย่างยิ่ง
 					เนื่องในโอกาสที่ท่านได้รับการคัดเลือกให้เข้าร่วมเป็น<span
-					 style="font-weight:600; color:#111827;">ยุวทูตอวัยวะ</span>
+						style="font-weight:600; color:#111827;">ยุวทูตอวัยวะ</span>
 				</p>
 			</section>
 
 			<section style="margin-top:2rem;">
-				<h3 style="margin:0; font-size:0.75rem; line-height:1rem; font-weight:600; letter-spacing:0.1em; color:#9ca3af; text-transform:uppercase; margin-bottom:1rem;">การปฐมนิเทศ</h3>
-				<div
-				 style="border-radius:1rem; border-style:solid; border-width:1px; border-color:#ffe4e6; background-color:#fff1f2; padding-left:1.25rem; padding-right:1.25rem; padding-top:1.25rem; padding-bottom:1.25rem;">
-					<div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:1rem;">
-						<div style="display:flex; align-items:flex-start; gap:0.75rem;">
-							<div
-							 style="margin-top:0.125rem; display:flex; width:2rem; height:2rem; flex-shrink:0; align-items:center; justify-content:center; border-radius:0.75rem; background-color:#ffffff; border-style:solid; border-width:1px; border-color:#ffe4e6; color:#f43f5e;">
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-									stroke="currentColor" stroke-width="2" style="display:block; height:1rem; width:1rem;">
-									<path stroke-linecap="round" stroke-linejoin="round"
-										d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-								</svg>
-							</div>
-							<div>
-								<p style="margin:0; font-size:0.75rem; line-height:1rem; color:#fb7185; font-weight:500; margin-bottom:0.125rem;">วันที่</p>
-								<p style="margin:0; font-size:0.875rem; line-height:1.25rem; font-weight:600; color:#9f1239;">11 พฤษภาคม พ.ศ. 2569</p>
-							</div>
-						</div>
-						<div style="display:flex; align-items:flex-start; gap:0.75rem;">
-							<div
-							 style="margin-top:0.125rem; display:flex; width:2rem; height:2rem; flex-shrink:0; align-items:center; justify-content:center; border-radius:0.75rem; background-color:#ffffff; border-style:solid; border-width:1px; border-color:#ffe4e6; color:#f43f5e;">
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-									stroke="currentColor" stroke-width="2" style="display:block; height:1rem; width:1rem;">
-									<path stroke-linecap="round" stroke-linejoin="round"
-										d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-									<path stroke-linecap="round" stroke-linejoin="round"
-										d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-								</svg>
-							</div>
-							<div>
-								<p style="margin:0; font-size:0.75rem; line-height:1rem; color:#fb7185; font-weight:500; margin-bottom:0.125rem;">สถานที่</p>
-								<p style="margin:0; font-size:0.875rem; line-height:1.25rem; font-weight:600; color:#9f1239;">อาคารรัตนวิทยาพัฒน์ โรงพยาบาลจุฬาลงกรณ์ สภากาชาดไทย</p>
-							</div>
-						</div>
-					</div>
-				</div>
+				<h3
+					style="margin:0; font-size:0.75rem; line-height:1rem; font-weight:600; letter-spacing:0.1em; color:#9ca3af; text-transform:uppercase; margin-bottom:1rem;">
+					การปฐมนิเทศ</h3>
+				<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+					<tr>
+						<td width="50%" valign="top" style="padding-right:6px;">
+							<table role="presentation" width="100%" height="110" cellpadding="0" cellspacing="0"
+								border="0"
+								style="height:100px;border:1px solid #ffe4e6;background-color:#fff1f2;border-radius:16px;border-collapse:separate;">
+								<tr>
+									<td valign="top" style="padding:20px;">
+										<p
+											style="margin:0 0 4px 0;font-size:12px;line-height:16px;color:#fb7185;font-weight:500;">
+											วันที่
+										</p>
+										<p
+											style="margin:0;font-size:14px;line-height:20px;font-weight:600;color:#9f1239;">
+											11 พฤษภาคม พ.ศ. 2569
+										</p>
+									</td>
+								</tr>
+							</table>
+						</td>
+
+						<td width="50%" valign="top" style="padding-left:6px;">
+							<table role="presentation" width="100%" height="110" cellpadding="0" cellspacing="0"
+								border="0"
+								style="height:100px;border:1px solid #ffe4e6;background-color:#fff1f2;border-radius:16px;border-collapse:separate;">
+								<tr>
+									<td valign="top" style="padding:20px;">
+										<p
+											style="margin:0 0 4px 0;font-size:12px;line-height:16px;color:#fb7185;font-weight:500;">
+											สถานที่
+										</p>
+										<p
+											style="margin:0;font-size:14px;line-height:20px;font-weight:600;color:#9f1239;">
+											อาคารรัตนวิทยาพัฒน์ โรงพยาบาลจุฬาลงกรณ์ สภากาชาดไทย
+										</p>
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+				</table>
 			</section>
 
 			<section style="margin-top:2rem;">
-				<h3 style="margin:0; font-size:0.75rem; line-height:1rem; font-weight:600; letter-spacing:0.1em; color:#9ca3af; text-transform:uppercase; margin-bottom:1rem;">
+				<h3
+					style="margin:0; font-size:0.75rem; line-height:1rem; font-weight:600; letter-spacing:0.1em; color:#9ca3af; text-transform:uppercase; margin-bottom:1rem;">
 					การยืนยันสิทธิ์เข้าร่วมโครงการ</h3>
 				<p style="margin:0; font-size:1rem; line-height:1.75rem; color:#374151;">
 					กรุณาดำเนินการยืนยันสิทธิ์การเข้าร่วมโครงการภายในวันที่
 					<span style="font-weight:600; color:#111827;">5 พฤษภาคม พ.ศ. 2569</span>
 					ผ่านแบบฟอร์มด้านล่างนี้
 				</p>
-				<div style="margin-top:1.25rem; display:flex; justify-content:center;">
-					<a href="https://docs.google.com/forms/d/e/1FAIpQLSe1lzaPweqw__nyjQLErsl6gXsZUxf01JUyslbd1vlMI1YIJQ/viewform?usp=dialog"
-						target="_blank" rel="noopener noreferrer"
-					 style="text-decoration:none; color:#ffffff; display:inline-flex; align-items:center; gap:0.5rem; border-radius:0.75rem; background-color:#ef4444; transition-property:color, background-color, border-color, opacity, box-shadow, transform, filter; transition-timing-function:ease; transition-duration:150ms; padding-left:1.25rem; padding-right:1.25rem; padding-top:0.75rem; padding-bottom:0.75rem; font-size:0.875rem; line-height:1.25rem; font-weight:600; box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-							stroke="currentColor" stroke-width="2" style="display:block; height:1rem; width:1rem;">
-							<path stroke-linecap="round" stroke-linejoin="round"
-								d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-						</svg>
-						กรอกแบบฟอร์มยืนยันสิทธิ์การเข้าร่วมโครงการ
-					</a>
-				</div>
+				<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+					style="margin-top:1.25rem;">
+					<tr>
+						<td align="center" style="text-align:center;">
+							<a href="https://docs.google.com/forms/d/e/1FAIpQLSe1lzaPweqw__nyjQLErsl6gXsZUxf01JUyslbd1vlMI1YIJQ/viewform?usp=dialog"
+								target="_blank" rel="noopener noreferrer"
+								style="display:inline-block;text-decoration:none;color:#ffffff;background-color:#ef4444;border-radius:12px;padding:12px 20px;font-size:14px;line-height:20px;font-weight:600;font-family:'IBM Plex Sans Thai','Noto Sans Thai','Anuphan','Kanit','Noto Sans Thai','Tahoma', Arial,sans-serif;">
+								กรอกแบบฟอร์มยืนยันสิทธิ์การเข้าร่วมโครงการ
+							</a>
+						</td>
+					</tr>
+				</table>
 				<div
-				 style="margin-top:1rem; border-radius:0.75rem; border-style:solid; border-width:1px; border-color:#e5e7eb; background-color:#fafafa; padding-left:1rem; padding-right:1rem; padding-top:1rem; padding-bottom:1rem; font-size:0.875rem; line-height:1.75rem; color:#374151;">
+					style="margin-top:1rem; border-radius:0.75rem; border-style:solid; border-width:1px; border-color:#e5e7eb; background-color:#fafafa; padding-left:1rem; padding-right:1rem; padding-top:1rem; padding-bottom:1rem; font-size:0.875rem; line-height:1.75rem; color:#374151;">
 					หากท่านไม่ดำเนินการยืนยันสิทธิ์ภายในระยะเวลาที่กำหนด
-					ทางโครงการขอสงวนสิทธิ์ในการพิจารณาว่าท่าน<br /><span
-					 style="font-weight:600; color:#dc2626;">สละสิทธิ์</span>ในการเข้าร่วมโครงการ
+					ทางโครงการขอสงวนสิทธิ์ในการพิจารณาว่าท่าน<span
+						style="font-weight:600; color:#dc2626;">สละสิทธิ์</span>ในการเข้าร่วมโครงการ
 				</div>
 			</section>
 
-			<section style="margin-top:2rem;">
-				<h3 style="margin:0; font-size:0.75rem; line-height:1rem; font-weight:600; letter-spacing:0.1em; color:#9ca3af; text-transform:uppercase; margin-bottom:1rem;">ติดต่อสอบถามเพิ่มเติม
+			<section style="margin-top:32px;">
+				<h3
+					style="margin:0 0 16px 0;font-size:12px;line-height:16px;font-weight:600;letter-spacing:1.2px;color:#9ca3af;text-transform:uppercase;">
+					ติดต่อสอบถามเพิ่มเติม
 				</h3>
-				<div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:0.75rem;">
-					<div style="border-radius:0.75rem; border-style:solid; border-width:1px; border-color:#f3f4f6; background-color:#f9fafb; padding-left:1rem; padding-right:1rem; padding-top:0.875rem; padding-bottom:0.875rem;">
-						<p style="margin:0; margin-bottom:0.25rem; font-size:0.75rem; line-height:1rem; color:#9ca3af; font-weight:500;">Instagram</p>
-						<p style="margin:0; font-size:0.875rem; line-height:1.25rem; font-weight:600; color:#374151;">@organtogoth</p>
-					</div>
-					<div style="border-radius:0.75rem; border-style:solid; border-width:1px; border-color:#f3f4f6; background-color:#f9fafb; padding-left:1rem; padding-right:1rem; padding-top:0.875rem; padding-bottom:0.875rem;">
-						<p style="margin:0; margin-bottom:0.25rem; font-size:0.75rem; line-height:1rem; color:#9ca3af; font-weight:500;">Email</p>
-						<p style="margin:0; font-size:0.875rem; line-height:1.25rem; font-weight:600; color:#374151;">organtogo@gmail.com</p>
-					</div>
-				</div>
-			</section>
 
-			<section style="border-top-style:solid; border-top-width:1px; border-color:#f3f4f6; padding-top:0.25rem; margin-top:2rem;">
+				<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+					<tr>
+						<td width="50%" valign="top" style="padding-right:6px;">
+							<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+								style="border:1px solid #f3f4f6;background-color:#f9fafb;border-radius:12px;border-collapse:separate;">
+								<tr>
+									<td style="padding:14px 16px;">
+										<p
+											style="margin:0 0 4px 0;font-size:12px;line-height:16px;color:#9ca3af;font-weight:500;">
+											Instagram
+										</p>
+										<p
+											style="margin:0;font-size:14px;line-height:20px;font-weight:600;color:#374151;">
+											@organtogoth
+										</p>
+									</td>
+								</tr>
+							</table>
+						</td>
+
+						<td width="50%" valign="top" style="padding-left:6px;">
+							<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+								style="border:1px solid #f3f4f6;background-color:#f9fafb;border-radius:12px;border-collapse:separate;">
+								<tr>
+									<td style="padding:14px 16px;">
+										<p
+											style="margin:0 0 4px 0;font-size:12px;line-height:16px;color:#9ca3af;font-weight:500;">
+											Email
+										</p>
+										<p style="margin:0;font-size:14px;line-height:20px;font-weight:600;">
+											<a href="mailto:organtogo@gmail.com"
+												style="color:#374151 !important;text-decoration:none !important;font-weight:600;">
+												organtogo@gmail.com
+											</a>
+										</p>
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+				</table>
+			</section>
+			<section
+				style="border-top-style:solid; border-top-width:1px; border-color:#f3f4f6; padding-top:0.25rem; margin-top:2rem;">
 				<p style="margin:0; font-size:0.875rem; line-height:1.25rem; color:#6b7280;">ขอแสดงความนับถือ</p>
-				<p style="margin:0; margin-top:0.75rem; font-size:1rem; line-height:1.5rem; font-weight:600; color:#111827;">นางสาวบุลภรณ์ รัตนะเจริญธรรม</p>
-				<p style="margin:0; margin-top:0.125rem; font-size:0.875rem; line-height:1.25rem; color:#6b7280;">Head of Human Resources</p>
+				<p
+					style="margin:0; margin-top:0.75rem; font-size:1rem; line-height:1.5rem; font-weight:600; color:#111827;">
+					นางสาวบุลภรณ์ รัตนะเจริญธรรม</p>
+				<p style="margin:0; margin-top:0.125rem; font-size:0.875rem; line-height:1.25rem; color:#6b7280;">Head
+					of Human Resources</p>
 			</section>
 
 		</div>
+		<div style="border-top:1px solid #f3f4f6;background-color:#f9fafb;padding:16px 32px;">
+			<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+				<tr>
+					<td align="center"
+						style="font-size:12px;line-height:16px;color:#9ca3af;text-align:center;font-family:'IBM Plex Sans Thai','Noto Sans Thai','Anuphan','Kanit','Noto Sans Thai','Tahoma',Arial,sans-serif;">
 
-		<div style="border-top-style:solid; border-top-width:1px; border-color:#f3f4f6; background-color:#f9fafb; padding-left:3rem; padding-right:3rem; padding-top:1rem; padding-bottom:1rem;">
-			<div style="display:flex; flex-direction:row; align-items:center; justify-content:center; gap:0.5rem; font-size:0.75rem; line-height:1rem; color:#9ca3af; text-align:center;">
-				<a href="https://github.com/arckanop/OASIS-Mail-Announcement" target="_blank" rel="noopener noreferrer"
-				 style="text-decoration:none; color:inherit; display:inline-flex; align-items:center; gap:0.375rem; transition-property:color, background-color, border-color, opacity, box-shadow, transform, filter; transition-timing-function:ease; transition-duration:150ms;">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="display:block; height:1rem; width:1rem;">
-						<path fill-rule="evenodd"
-							d="M12 2C6.477 2 2 6.59 2 12.253c0 4.53 2.865 8.37 6.839 9.727.5.095.682-.222.682-.494 0-.244-.009-.89-.014-1.747-2.782.617-3.37-1.37-3.37-1.37-.454-1.178-1.11-1.492-1.11-1.492-.908-.636.069-.623.069-.623 1.004.072 1.532 1.06 1.532 1.06.892 1.574 2.341 1.119 2.91.856.091-.664.35-1.119.636-1.376-2.221-.259-4.555-1.137-4.555-5.062 0-1.118.389-2.032 1.029-2.748-.103-.26-.446-1.302.098-2.714 0 0 .84-.276 2.75 1.05A9.303 9.303 0 0112 6.844c.85.004 1.705.117 2.504.343 1.909-1.326 2.747-1.05 2.747-1.05.546 1.412.203 2.454.1 2.714.64.716 1.028 1.63 1.028 2.748 0 3.936-2.338 4.8-4.566 5.054.359.318.678.946.678 1.907 0 1.377-.012 2.487-.012 2.826 0 .275.18.594.688.493C19.138 20.62 22 16.78 22 12.253 22 6.59 17.523 2 12 2z"
-							clip-rule="evenodd" />
-					</svg>
-					Github
-				</a>
-				<span style="display:inline; color:#e5e7eb;">•</span>
-				<a href="https://github.com/arckanop/OASIS-Mail-Announcement/blob/master/LICENSE.md" target="_blank"
-					rel="noopener noreferrer" style="text-decoration:none; color:inherit; transition-property:color, background-color, border-color, opacity, box-shadow, transform, filter; transition-timing-function:ease; transition-duration:150ms;">AGPL-3.0</a>
-				<span style="display:inline; color:#e5e7eb;">|</span>
-				<span>Email Send v1.1.2</span>
-				<span style="display:inline; color:#e5e7eb;">•</span>
-				<span>For Organtogo</span>
-			</div>
+						<a href="https://github.com/arckanop/OASIS-Mail-Announcement" target="_blank"
+							rel="noopener noreferrer" style="color:#9ca3af;text-decoration:none;font-weight:400;">
+							Github
+						</a>
+
+						<span style="color:#d1d5db;padding:0 6px;">•</span>
+
+						<a href="https://github.com/arckanop/OASIS-Mail-Announcement/blob/master/LICENSE.md"
+							target="_blank" rel="noopener noreferrer"
+							style="color:#9ca3af;text-decoration:none;font-weight:400;">
+							AGPL-3.0
+						</a>
+
+						<span style="color:#d1d5db;padding:0 6px;">|</span>
+
+						<span style="font-weight:400;">Email Send v1.1.2</span>
+
+						<span style="color:#d1d5db;padding:0 6px;">•</span>
+
+						<span style="font-weight:400;">For Organtogo</span>
+
+					</td>
+				</tr>
+			</table>
 		</div>
 
 	</div>
