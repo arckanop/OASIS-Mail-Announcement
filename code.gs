@@ -1,93 +1,82 @@
 function myFunction() {
 	Logger.log(MailApp.getRemainingDailyQuota());
-	const rows = [94, 95, 96, 120];
 
-	for (let i = 0; i < rows.length; i++) {
-		sendEmailByRow(rows[i]);
+	for (let i = 2; i <= 4; i++) {
+		sendEmailByRow(i);
 	}
 }
 
 function sendEmailByRow(row) {
-	const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Form Responses");
-	if (!sheet) throw new Error('Response sheet not found');
+	const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Test");
+	if (!sheet) throw new Error('Sheet not found');
 
 	row = Number(row);
 	if (!row || row < 2) throw new Error('Invalid row number');
 
+	const statusCol = 15;
+
 	try {
 		if (MailApp.getRemainingDailyQuota() < 1) throw new Error('No email quota remaining today');
 
-		const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-		const values = sheet.getRange(row, 1, 1, sheet.getLastColumn()).getValues()[0];
+		const values = sheet.getRange(row, 2, 1, 13).getValues()[0];
 
-		const record = {};
-		headers.forEach((h, i) => record[h] = values[i]);
+		const emailAddress = String(values[0] || "").trim();
+		const teamName = String(values[1] || "").trim();
+		const memberCount = Number(values[2]) || "";
 
-		const membershipID = String(values[2] || '').trim();
-		if (!membershipID) throw new Error('No membership ID in column C');
+		if (!emailAddress) throw new Error("Missing email address in column B");
+		if (!teamName) throw new Error("Missing team name in column C");
 
-		const emailAddress = String(record['Email Address'] || record['ที่อยู่อีเมล'] || '').trim();
-		if (!emailAddress) throw new Error('Missing email address');
+		const members = [];
+
+		for (let i = 0; i < 5; i++) {
+			const firstName = String(values[3 + i * 2] || "").trim();
+			const lastName = String(values[4 + i * 2] || "").trim();
+
+			if (firstName || lastName) {
+				members.push({
+					firstName,
+					lastName,
+					fullName: `${firstName} ${lastName}`.trim()
+				});
+			}
+		}
 
 		const emailData = {
-			membershipID: membershipID,
-			parentFirstName: record["ชื่อผู้ปกครอง"] || '',
-			parentLastName: record["นามสกุลผู้ปกครอง"] || '',
-			studentFirstName: record["ชื่อนักเรียน"] || '',
-			studentLastName: record["นามสกุลนักเรียน"] || '',
-			jerseySize: record["ไซส์เสื้อ Jersey"] || '-',
-			jerseyText: record["ตัวอักษรบนเสื้อ Jersey"] || '-',
-			jerseyNumber: record["ตัวเลขบนเสื้อ Jersey"] || '-',
-			poloSize: record["ไซส์เสื้อโปโล"] || '-',
-			poloGender: record["เพศเสื้อโปโล"] || '-'
+			emailAddress,
+			teamName,
+			memberCount,
+			members,
+
+			member1FirstName: members[0]?.firstName || "",
+			member1LastName: members[0]?.lastName || "",
+			member2FirstName: members[1]?.firstName || "",
+			member2LastName: members[1]?.lastName || "",
+			member3FirstName: members[2]?.firstName || "",
+			member3LastName: members[2]?.lastName || "",
+			member4FirstName: members[3]?.firstName || "",
+			member4LastName: members[3]?.lastName || "",
+			member5FirstName: members[4]?.firstName || "",
+			member5LastName: members[4]?.lastName || ""
 		};
 
-		const subject = 'ขอบคุณสำหรับการกรอกแบบฟอร์มสมัครสมาชิกและจองไซส์เสื้อ Triamudom Family';
+		const subject = "ประกาศผลการคัดเลือกเข้าโครงการ OASIS";
 		const plainText = generatePlainText(emailData);
 		const htmlBody = generateHtmlBody(emailData);
 
 		GmailApp.sendEmail(emailAddress, subject, plainText, {
 			htmlBody: htmlBody,
-			name: 'ข้อมูลการสมัครสมาชิก',
-			noReply: true
+			name: "Organtogo Gen 2",
+			noReply: false
 		});
 
-		sheet.getRange(row, 32).setValue("TRUE");
-
-		sheet
-			.getRange(row, 1, 1, sheet.getLastColumn())
-			.setFontFamily('Anuphan');
-
-		const monoRanges = [
-			'A' + row, 'B' + row, 'C' + row, 'H' + row, 'J' + row,
-			'Q' + row, 'R' + row, 'S' + row, 'T' + row, 'AD' + row
-		];
-		sheet.getRangeList(monoRanges).setFontFamily('JetBrains Mono');
-
-		sheet.getRange('A' + row).setHorizontalAlignment('right');
-		sheet.getRangeList(['B' + row, 'AD' + row]).setHorizontalAlignment('left');
-		sheet.getRangeList([
-			'C' + row, 'H' + row, 'I' + row, 'J' + row, 'K' + row,
-			'L' + row, 'M' + row, 'Q' + row, 'R' + row, 'S' + row,
-			'T' + row, 'U' + row, 'AE' + row
-		]).setHorizontalAlignment('center');
-
-		sheet.getRange(row, 33).setValue('Retry Successfully');
-		Logger.log('Retry succeeded for row %s', row);
+		sheet.getRange(row, statusCol).setValue('Email Sent Successfully');
+		Logger.log("Email sent successfully for row " + row);
 	} catch (err) {
-		sheet.getRange(row, 33).setValue('Retry Failed: ' + err.message);
+		sheet.getRange(row, statusCol).setValue("Sending Failed: " + err.message);
+		Logger.log("Sending failed for row " + row + ": " + err.message);
 		throw err;
 	}
-}
-
-function generatePlainText(data) {
-	return `
-	`.trim();
-}
-
-function generateHtmlBody(data) {
-	return `
-	`.trim();
 }
 
 function escapeHtml_(text) {
@@ -98,3 +87,234 @@ function escapeHtml_(text) {
 		.replace(/"/g, '&quot;')
 		.replace(/'/g, '&#39;');
 }
+
+function generatePlainText(data) {
+	const memberLines = (data.members || [])
+		.map((member, index) => `${index + 1}. ${member.fullName}`)
+		.join("\n");
+
+	return `
+ประกาศผลการคัดเลือก
+
+ยินดีด้วยกับทีม
+${data.teamName}
+
+ผ่านการคัดเลือกเข้าโครงการ Organ Ambassador Student Innovation Scheme: OASIS
+
+สมาชิกในทีม (${data.members.length} คน)
+${memberLines}
+
+ทาง Organtogo Gen 2 ในเครือข่ายเยาวชนอาสาสมัครกาชาดไทย (Thai Red Cross Youth Network: TRCYN)
+ภายใต้สำนักยุวกาชาดและอาสาสมัคร สภากาชาดไทย ขอแสดงความยินดีเป็นอย่างยิ่ง
+เนื่องในโอกาสที่ท่านได้รับการคัดเลือกให้เข้าร่วมเป็นยุวทูตอวัยวะ
+
+การปฐมนิเทศ
+วันที่: 11 พฤษภาคม พ.ศ. 2569
+สถานที่: อาคารรัตนวิทยาพัฒน์ โรงพยาบาลจุฬาลงกรณ์ สภากาชาดไทย
+
+การยืนยันสิทธิ์เข้าร่วมโครงการ
+กรุณาดำเนินการยืนยันสิทธิ์การเข้าร่วมโครงการภายในวันที่ 5 พฤษภาคม พ.ศ. 2569
+ผ่านแบบฟอร์มด้านล่างนี้
+
+https://docs.google.com/forms/d/e/1FAIpQLSe1lzaPweqw__nyjQLErsl6gXsZUxf01JUyslbd1vlMI1YIJQ/viewform?usp=dialog
+
+หากท่านไม่ดำเนินการยืนยันสิทธิ์ภายในระยะเวลาที่กำหนด
+ทางโครงการขอสงวนสิทธิ์ในการพิจารณาว่าท่านสละสิทธิ์ในการเข้าร่วมโครงการ
+
+ติดต่อสอบถามเพิ่มเติม
+Instagram: @organtogoth
+Email: organtogo@gmail.com
+
+ขอแสดงความนับถือ
+
+นางสาวบุลภรณ์ รัตนะเจริญธรรม
+Head of Human Resources
+	`.trim();
+}
+
+function generateHtmlBody(data) {
+	const memberRows = (data.members || []).map((member, index) => {
+		const isLast = index === data.members.length - 1;
+
+		return `
+			<li style="display:flex; align-items:center; gap:0.75rem; padding-left:1rem; padding-right:1rem; padding-top:0.75rem; padding-bottom:0.75rem; font-size:0.875rem; line-height:1.25rem; color:#374151; background-color:#ffffff; box-sizing:border-box; ${isLast ? "" : "border-bottom-style:solid; border-bottom-width:1px; border-bottom-color:#f3f4f6;"}">
+				<span style="display:flex; width:1.5rem; height:1.5rem; flex-shrink:0; align-items:center; justify-content:center; border-radius:9999px; background-color:#ffe4e6; font-size:11px; font-weight:600; color:#e11d48; box-sizing:border-box;">
+					${index + 1}
+				</span>
+				<span>${escapeHtml_(member.fullName)}</span>
+			</li>
+		`;
+	}).join("");
+
+	return `
+	<!DOCTYPE html>
+<html lang="th">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap"
+		rel="stylesheet" />
+</head>
+
+<body style="margin:0; box-sizing:border-box; width:100%; -webkit-text-size-adjust:100%; font-family:'IBM Plex Sans Thai','Noto Sans Thai', 'Anuphan', 'Kanit', Arial, sans-serif; background-image:linear-gradient(to bottom, #fff1f2, #ffffff, #f3f4f6); min-height:100vh; padding-left:1.5rem; padding-right:1.5rem; padding-top:2.5rem; padding-bottom:2.5rem; color:#1f2937;"
+>
+	<div style="margin-left:auto; margin-right:auto; max-width:48rem; overflow:hidden; border-radius:1.5rem; border-style:solid; border-width:1px; border-color:#e5e7eb; background-color:#ffffff; box-shadow:0 20px 25px -5px rgba(0,0,0,0.10), 0 8px 10px -6px rgba(0,0,0,0.10); width:100%; box-sizing:border-box; font-family:'IBM Plex Sans Thai','Noto Sans Thai', 'Anuphan', 'Kanit', Arial, sans-serif;">
+
+		<div
+		 style="background-image:linear-gradient(to top right, #fb7185, #ef4444, #dc2626); padding-left:3rem; padding-right:3rem; padding-top:2.5rem; padding-bottom:2.5rem; color:#ffffff; text-align:center; position:relative;">
+			<div
+			 style="margin-bottom:1rem; display:inline-flex; align-items:center; gap:0.5rem; border-radius:9999px; background-color:rgba(255,255,255,0.15); border-style:solid; border-width:1px; border-color:rgba(255,255,255,0.30); padding-left:1rem; padding-right:1rem; padding-top:0.25rem; padding-bottom:0.25rem; font-size:0.75rem; line-height:1rem;">
+				ประกาศผลการคัดเลือก
+			</div>
+			<h1 style="margin:0; font-size:2.25rem; line-height:2.5rem; font-weight:700; letter-spacing:-0.025em;">ยินดีด้วยกับทีม</h1>
+			<h2 style="margin:0; margin-top:0.5rem; font-size:1.875rem; line-height:2.25rem; font-weight:600; opacity:0.9;">${escapeHtml_(data.teamName)}</h2>
+			<div
+			 style="margin-top:1.25rem; display:inline-flex; align-items:center; gap:0.5rem; border-radius:9999px; background-color:rgba(255,255,255,0.15); border-style:solid; border-width:1px; border-color:rgba(255,255,255,0.30); padding-left:1rem; padding-right:1rem; padding-top:0.5rem; padding-bottom:0.5rem; font-size:0.875rem; line-height:1.25rem;">
+				ผ่านการคัดเลือกเข้าโครงการ Organ Ambassador Student Innovation Scheme: OASIS
+			</div>
+		</div>
+
+		<div style="padding-left:3rem; padding-right:3rem; padding-top:2rem; padding-bottom:2rem;">
+
+			<section>
+				<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
+					<h3 style="margin:0; font-size:0.75rem; line-height:1rem; font-weight:600; letter-spacing:0.1em; color:#9ca3af; text-transform:uppercase;">สมาชิกในทีม</h3>
+					<span
+					 style="border-radius:9999px; background-color:#fff1f2; border-style:solid; border-width:1px; border-color:#ffe4e6; padding-left:0.75rem; padding-right:0.75rem; padding-top:0.25rem; padding-bottom:0.25rem; font-size:0.75rem; line-height:1rem; font-weight:500; color:#f43f5e;">${data.members.length}
+						คน</span>
+				</div>
+				<ul style="margin:0; padding:0; list-style:none; border-radius:1rem; border-style:solid; border-width:1px; border-color:#f3f4f6; overflow:hidden;">
+					${memberRows}
+				</ul>
+			</section>
+
+			<section style="margin-top:2rem;">
+				<p style="margin:0; font-size:1rem; line-height:1.75rem; color:#374151;">
+					ทาง Organtogo Gen 2 ในเครือข่ายเยาวชนอาสาสมัครกาชาดไทย (Thai Red Cross Youth Network: TRCYN)
+					ภายใต้สำนักยุวกาชาดและอาสาสมัคร สภากาชาดไทย ขอแสดงความยินดีเป็นอย่างยิ่ง
+					เนื่องในโอกาสที่ท่านได้รับการคัดเลือกให้เข้าร่วมเป็น<span
+					 style="font-weight:600; color:#111827;">ยุวทูตอวัยวะ</span>
+				</p>
+			</section>
+
+			<section style="margin-top:2rem;">
+				<h3 style="margin:0; font-size:0.75rem; line-height:1rem; font-weight:600; letter-spacing:0.1em; color:#9ca3af; text-transform:uppercase; margin-bottom:1rem;">การปฐมนิเทศ</h3>
+				<div
+				 style="border-radius:1rem; border-style:solid; border-width:1px; border-color:#ffe4e6; background-color:#fff1f2; padding-left:1.25rem; padding-right:1.25rem; padding-top:1.25rem; padding-bottom:1.25rem;">
+					<div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:1rem;">
+						<div style="display:flex; align-items:flex-start; gap:0.75rem;">
+							<div
+							 style="margin-top:0.125rem; display:flex; width:2rem; height:2rem; flex-shrink:0; align-items:center; justify-content:center; border-radius:0.75rem; background-color:#ffffff; border-style:solid; border-width:1px; border-color:#ffe4e6; color:#f43f5e;">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+									stroke="currentColor" stroke-width="2" style="display:block; height:1rem; width:1rem;">
+									<path stroke-linecap="round" stroke-linejoin="round"
+										d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+								</svg>
+							</div>
+							<div>
+								<p style="margin:0; font-size:0.75rem; line-height:1rem; color:#fb7185; font-weight:500; margin-bottom:0.125rem;">วันที่</p>
+								<p style="margin:0; font-size:0.875rem; line-height:1.25rem; font-weight:600; color:#9f1239;">11 พฤษภาคม พ.ศ. 2569</p>
+							</div>
+						</div>
+						<div style="display:flex; align-items:flex-start; gap:0.75rem;">
+							<div
+							 style="margin-top:0.125rem; display:flex; width:2rem; height:2rem; flex-shrink:0; align-items:center; justify-content:center; border-radius:0.75rem; background-color:#ffffff; border-style:solid; border-width:1px; border-color:#ffe4e6; color:#f43f5e;">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+									stroke="currentColor" stroke-width="2" style="display:block; height:1rem; width:1rem;">
+									<path stroke-linecap="round" stroke-linejoin="round"
+										d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+									<path stroke-linecap="round" stroke-linejoin="round"
+										d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+								</svg>
+							</div>
+							<div>
+								<p style="margin:0; font-size:0.75rem; line-height:1rem; color:#fb7185; font-weight:500; margin-bottom:0.125rem;">สถานที่</p>
+								<p style="margin:0; font-size:0.875rem; line-height:1.25rem; font-weight:600; color:#9f1239;">อาคารรัตนวิทยาพัฒน์ โรงพยาบาลจุฬาลงกรณ์ สภากาชาดไทย</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section style="margin-top:2rem;">
+				<h3 style="margin:0; font-size:0.75rem; line-height:1rem; font-weight:600; letter-spacing:0.1em; color:#9ca3af; text-transform:uppercase; margin-bottom:1rem;">
+					การยืนยันสิทธิ์เข้าร่วมโครงการ</h3>
+				<p style="margin:0; font-size:1rem; line-height:1.75rem; color:#374151;">
+					กรุณาดำเนินการยืนยันสิทธิ์การเข้าร่วมโครงการภายในวันที่
+					<span style="font-weight:600; color:#111827;">5 พฤษภาคม พ.ศ. 2569</span>
+					ผ่านแบบฟอร์มด้านล่างนี้
+				</p>
+				<div style="margin-top:1.25rem; display:flex; justify-content:center;">
+					<a href="https://docs.google.com/forms/d/e/1FAIpQLSe1lzaPweqw__nyjQLErsl6gXsZUxf01JUyslbd1vlMI1YIJQ/viewform?usp=dialog"
+						target="_blank" rel="noopener noreferrer"
+					 style="text-decoration:none; color:#ffffff; display:inline-flex; align-items:center; gap:0.5rem; border-radius:0.75rem; background-color:#ef4444; transition-property:color, background-color, border-color, opacity, box-shadow, transform, filter; transition-timing-function:ease; transition-duration:150ms; padding-left:1.25rem; padding-right:1.25rem; padding-top:0.75rem; padding-bottom:0.75rem; font-size:0.875rem; line-height:1.25rem; font-weight:600; box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+							stroke="currentColor" stroke-width="2" style="display:block; height:1rem; width:1rem;">
+							<path stroke-linecap="round" stroke-linejoin="round"
+								d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+						</svg>
+						กรอกแบบฟอร์มยืนยันสิทธิ์การเข้าร่วมโครงการ
+					</a>
+				</div>
+				<div
+				 style="margin-top:1rem; border-radius:0.75rem; border-style:solid; border-width:1px; border-color:#e5e7eb; background-color:#fafafa; padding-left:1rem; padding-right:1rem; padding-top:1rem; padding-bottom:1rem; font-size:0.875rem; line-height:1.75rem; color:#374151;">
+					หากท่านไม่ดำเนินการยืนยันสิทธิ์ภายในระยะเวลาที่กำหนด
+					ทางโครงการขอสงวนสิทธิ์ในการพิจารณาว่าท่าน<br /><span
+					 style="font-weight:600; color:#dc2626;">สละสิทธิ์</span>ในการเข้าร่วมโครงการ
+				</div>
+			</section>
+
+			<section style="margin-top:2rem;">
+				<h3 style="margin:0; font-size:0.75rem; line-height:1rem; font-weight:600; letter-spacing:0.1em; color:#9ca3af; text-transform:uppercase; margin-bottom:1rem;">ติดต่อสอบถามเพิ่มเติม
+				</h3>
+				<div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:0.75rem;">
+					<div style="border-radius:0.75rem; border-style:solid; border-width:1px; border-color:#f3f4f6; background-color:#f9fafb; padding-left:1rem; padding-right:1rem; padding-top:0.875rem; padding-bottom:0.875rem;">
+						<p style="margin:0; margin-bottom:0.25rem; font-size:0.75rem; line-height:1rem; color:#9ca3af; font-weight:500;">Instagram</p>
+						<p style="margin:0; font-size:0.875rem; line-height:1.25rem; font-weight:600; color:#374151;">@organtogoth</p>
+					</div>
+					<div style="border-radius:0.75rem; border-style:solid; border-width:1px; border-color:#f3f4f6; background-color:#f9fafb; padding-left:1rem; padding-right:1rem; padding-top:0.875rem; padding-bottom:0.875rem;">
+						<p style="margin:0; margin-bottom:0.25rem; font-size:0.75rem; line-height:1rem; color:#9ca3af; font-weight:500;">Email</p>
+						<p style="margin:0; font-size:0.875rem; line-height:1.25rem; font-weight:600; color:#374151;">organtogo@gmail.com</p>
+					</div>
+				</div>
+			</section>
+
+			<section style="border-top-style:solid; border-top-width:1px; border-color:#f3f4f6; padding-top:0.25rem; margin-top:2rem;">
+				<p style="margin:0; font-size:0.875rem; line-height:1.25rem; color:#6b7280;">ขอแสดงความนับถือ</p>
+				<p style="margin:0; margin-top:0.75rem; font-size:1rem; line-height:1.5rem; font-weight:600; color:#111827;">นางสาวบุลภรณ์ รัตนะเจริญธรรม</p>
+				<p style="margin:0; margin-top:0.125rem; font-size:0.875rem; line-height:1.25rem; color:#6b7280;">Head of Human Resources</p>
+			</section>
+
+		</div>
+
+		<div style="border-top-style:solid; border-top-width:1px; border-color:#f3f4f6; background-color:#f9fafb; padding-left:3rem; padding-right:3rem; padding-top:1rem; padding-bottom:1rem;">
+			<div style="display:flex; flex-direction:row; align-items:center; justify-content:center; gap:0.5rem; font-size:0.75rem; line-height:1rem; color:#9ca3af; text-align:center;">
+				<a href="https://github.com/arckanop/OASIS-Mail-Announcement" target="_blank" rel="noopener noreferrer"
+				 style="text-decoration:none; color:inherit; display:inline-flex; align-items:center; gap:0.375rem; transition-property:color, background-color, border-color, opacity, box-shadow, transform, filter; transition-timing-function:ease; transition-duration:150ms;">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="display:block; height:1rem; width:1rem;">
+						<path fill-rule="evenodd"
+							d="M12 2C6.477 2 2 6.59 2 12.253c0 4.53 2.865 8.37 6.839 9.727.5.095.682-.222.682-.494 0-.244-.009-.89-.014-1.747-2.782.617-3.37-1.37-3.37-1.37-.454-1.178-1.11-1.492-1.11-1.492-.908-.636.069-.623.069-.623 1.004.072 1.532 1.06 1.532 1.06.892 1.574 2.341 1.119 2.91.856.091-.664.35-1.119.636-1.376-2.221-.259-4.555-1.137-4.555-5.062 0-1.118.389-2.032 1.029-2.748-.103-.26-.446-1.302.098-2.714 0 0 .84-.276 2.75 1.05A9.303 9.303 0 0112 6.844c.85.004 1.705.117 2.504.343 1.909-1.326 2.747-1.05 2.747-1.05.546 1.412.203 2.454.1 2.714.64.716 1.028 1.63 1.028 2.748 0 3.936-2.338 4.8-4.566 5.054.359.318.678.946.678 1.907 0 1.377-.012 2.487-.012 2.826 0 .275.18.594.688.493C19.138 20.62 22 16.78 22 12.253 22 6.59 17.523 2 12 2z"
+							clip-rule="evenodd" />
+					</svg>
+					Github
+				</a>
+				<span style="display:inline; color:#e5e7eb;">•</span>
+				<a href="https://github.com/arckanop/OASIS-Mail-Announcement/blob/master/LICENSE.md" target="_blank"
+					rel="noopener noreferrer" style="text-decoration:none; color:inherit; transition-property:color, background-color, border-color, opacity, box-shadow, transform, filter; transition-timing-function:ease; transition-duration:150ms;">AGPL-3.0</a>
+				<span style="display:inline; color:#e5e7eb;">|</span>
+				<span>Email Send v1.1.2</span>
+				<span style="display:inline; color:#e5e7eb;">•</span>
+				<span>For Organtogo</span>
+			</div>
+		</div>
+
+	</div>
+</body>
+
+</html>
+	`.trim();
+}
+
