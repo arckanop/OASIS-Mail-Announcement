@@ -1,13 +1,13 @@
 function myFunction() {
 	Logger.log(MailApp.getRemainingDailyQuota());
 
-	for (let i = 2; i <= 2; i++) {
+	for (let i = 2; i <= 25; i++) {
 		sendEmailByRow(i);
 	}
 }
 
 function sendEmailByRow(row) {
-	const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Test");
+	const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Finalists");
 	if (!sheet) throw new Error('Sheet not found');
 
 	row = Number(row);
